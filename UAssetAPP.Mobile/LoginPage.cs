@@ -12,28 +12,27 @@ public class LoginPage : ContentPage
         SetDynamicResource(BackgroundColorProperty, "PageBg");
 
         var userEntry = new Entry { Placeholder = "Kullanıcı adı", ClearButtonVisibility = ClearButtonVisibility.WhileEditing };
-        var passEntry = new Entry { Placeholder = "Şifre", IsPassword = true, ClearButtonVisibility = ClearButtonVisibility.WhileEditing };
-        var keyEntry = new Entry { Placeholder = "Panel Key", IsPassword = true, ClearButtonVisibility = ClearButtonVisibility.WhileEditing };
+        var keyEntry = new Entry { Placeholder = "Süreli Key", ClearButtonVisibility = ClearButtonVisibility.WhileEditing };
         var panelLinkEntry = new Entry
         {
-            Placeholder = "Panel Link (örn: panel.site.com)",
+            Placeholder = "Admin Panel Link (https://admin-panel-site.com)",
             ClearButtonVisibility = ClearButtonVisibility.WhileEditing,
-            Text = Preferences.Default.Get(PanelLinkPrefKey, string.Empty)
+            Text = Preferences.Default.Get(PanelLinkPrefKey, "https://admin-panel-site.com")
         };
 
         var info = new Label
         {
-            Text = "Panel link girersen doğrulama panel API üzerinden yapılır. Link yoksa demo fallback kullanılır.",
+            Text = "Admin panel HTTPS linki zorunlu. Key üretimi panelde yapılır ve mobilde key ile giriş yapılır.",
             FontSize = 13
         };
         info.SetDynamicResource(Label.TextColorProperty, "SecondaryText");
 
-        var loginButton = MakeButton("Giriş Yap", "AccentPurple");
-        var openPanelButton = MakeButton("Panel Linkini Aç", "AccentBlue");
-        var registerButton = MakeButton("Panelden Şifre/Key Oluştur", "AccentBurgundy");
+        var loginButton = MakeButton("Key ile Giriş Yap", "AccentPurple");
+        var openPanelButton = MakeButton("Admin Paneli Aç", "AccentBlue");
+        var keyPanelButton = MakeButton("Key Yönetimi", "AccentBurgundy");
 
         openPanelButton.Clicked += async (_, _) => await OpenPanelLinkAsync(panelLinkEntry.Text, false);
-        registerButton.Clicked += async (_, _) => await OpenPanelLinkAsync(panelLinkEntry.Text, true);
+        keyPanelButton.Clicked += async (_, _) => await OpenPanelLinkAsync(panelLinkEntry.Text, true);
 
         loginButton.Clicked += async (_, _) =>
         {
@@ -41,22 +40,27 @@ public class LoginPage : ContentPage
             var normalized = AuthService.NormalizePanelLink(panelLink);
             Preferences.Default.Set(PanelLinkPrefKey, normalized);
 
+            if (!AuthService.IsLikelyKey(keyEntry.Text ?? string.Empty))
+            {
+                await DisplayAlert("Geçersiz key", "Key formatı geçersiz görünüyor.", "Tamam");
+                return;
+            }
+
             loginButton.IsEnabled = false;
             try
             {
-                var result = await AuthService.TryLoginAsync(
+                var result = await AuthService.TryKeyLoginAsync(
                     userEntry.Text ?? string.Empty,
-                    passEntry.Text ?? string.Empty,
                     keyEntry.Text ?? string.Empty,
                     normalized);
 
-                if (!result.IsSuccess)
+                if (!result.IsSuccess || result.Session is null)
                 {
                     await DisplayAlert("Erişim reddedildi", result.Message, "Tamam");
                     return;
                 }
 
-                _app.MainPage = new NavigationPage(new MainPage(_app, result.EffectiveUser ?? "panel"));
+                _app.MainPage = new NavigationPage(new MainPage(_app, result.Session));
             }
             finally
             {
@@ -81,26 +85,16 @@ public class LoginPage : ContentPage
                     }.AssignDynamic(Label.TextColorProperty, "PrimaryText"),
                     new Label
                     {
-                        Text = "Özel Panel Girişi",
+                        Text = "Admin Panel Key Girişi",
                         FontSize = 16,
                         HorizontalOptions = LayoutOptions.Center
                     }.AssignDynamic(Label.TextColorProperty, "SecondaryText"),
                     info,
                     panelLinkEntry,
-                    new HorizontalStackLayout
-                    {
-                        Spacing = 8,
-                        Children = { openPanelButton, registerButton }
-                    },
+                    new HorizontalStackLayout { Spacing = 8, Children = { openPanelButton, keyPanelButton } },
                     userEntry,
-                    passEntry,
                     keyEntry,
-                    loginButton,
-                    new Label
-                    {
-                        Text = "Demo kullanıcı: paneladmin",
-                        FontSize = 12
-                    }.AssignDynamic(Label.TextColorProperty, "SecondaryText")
+                    loginButton
                 }
             }
         };
@@ -120,7 +114,7 @@ public class LoginPage : ContentPage
         return button;
     }
 
-    private async Task OpenPanelLinkAsync(string? link, bool register)
+    private async Task OpenPanelLinkAsync(string? link, bool keys)
     {
         var normalized = AuthService.NormalizePanelLink(link ?? string.Empty);
         if (string.IsNullOrWhiteSpace(normalized))
@@ -130,7 +124,7 @@ public class LoginPage : ContentPage
         }
 
         Preferences.Default.Set(PanelLinkPrefKey, normalized);
-        var uri = register ? AuthService.BuildRegisterLink(normalized) : normalized;
+        var uri = keys ? AuthService.BuildKeyManagementLink(normalized) : AuthService.BuildAdminLink(normalized);
 
         try
         {

@@ -5,7 +5,7 @@ namespace UAssetAPP.Mobile;
 public class MainPage : ContentPage
 {
     private readonly App _app;
-    private readonly string _currentUser;
+    private readonly KeySessionInfo _session;
     private readonly Label _statusLabel;
     private readonly Label _uassetLabel;
     private readonly Label _uexpLabel;
@@ -19,10 +19,10 @@ public class MainPage : ContentPage
     private FileResult? _uassetFile;
     private FileResult? _uexpFile;
 
-    public MainPage(App app, string currentUser)
+    public MainPage(App app, KeySessionInfo session)
     {
         _app = app;
-        _currentUser = currentUser;
+        _session = session;
         Title = "UAssetGUİ";
         SetDynamicResource(BackgroundColorProperty, "PageBg");
 
@@ -72,7 +72,10 @@ public class MainPage : ContentPage
         {
             CreateLabel("Premium UAsset Explorer", "PrimaryText", 26, FontAttributes.Bold),
             CreateLabel("Mor • Beyaz • Karmen Mavisi • Bordo temalı modern görünüm.", "SecondaryText", 13),
-            CreateLabel($"Giriş: {_currentUser}", "SecondaryText", 12),
+            CreateLabel($"Giriş: {_session.UserName}", "SecondaryText", 12),
+            CreateLabel($"Key Türü: {_session.KeyType}", "SecondaryText", 12),
+            CreateLabel($"Kalan Süre: {_session.RemainingText}", "SecondaryText", 12),
+            CreateLabel($"Geçerlilik: {_session.ExpiresAtUtc:yyyy-MM-dd HH:mm:ss} UTC", "SecondaryText", 12),
             _statusLabel
         }
     });

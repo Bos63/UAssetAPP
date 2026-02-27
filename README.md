@@ -44,20 +44,20 @@ Localde `dotnet` yoksa GitHub Actions ile APK üretebilirsin:
 - HEX arama ve byte önizleme ayarı (64-4096)
 
 ### Özel panel giriş
-Varsayılan demo bilgileri:
-- Kullanıcı: `paneladmin`
-- Şifre ve panel key: panel üzerinden oluşturulmalı.
+- Admin panel ayrı web sitesi: `https://admin-panel-site.com`
+- Mobil giriş: **kullanıcı adı + süreli key**
+- Uygulama, key doğrulamasını panel endpoint'i ile yapar ve key meta bilgisini ekranda gösterir.
 
-> Not: Bunlar geçici demo değerlerdir. Vereceğiniz özel link/API geldiğinde uzak doğrulama ile değiştirilebilir.
-
+### Süreli key türleri
+- `1h`, `5h`, `1d`, `1w`, `1m`, `1season`
 
 ### Panel link ile doğrulama
 - Login ekranına panel linkini gir (`https://...`).
-- Uygulama girişte şu endpoint'e POST atar: `/api/mobile/auth/validate`
-- Beklenen JSON istek alanları: `userName`, `password`, `panelKey`, `client`
-- Beklenen JSON cevap alanları: `success`, `message`, `userName`
-- "Panelden Şifre/Key Oluştur" butonu panel linkinin `/register` sayfasını açar.
-
+- Uygulama girişte endpoint'e POST atar: `/api/mobile/keys/consume`
+- Beklenen JSON istek alanları: `userName`, `panelKey`, `client`
+- Beklenen JSON cevap alanları: `success`, `message`, `userName`, `keyType`, `expiresAtUtc`, `remainingSeconds`, `isExpired`
+- Süresi dolmuş key için `isExpired=true` döner; uygulama girişi reddeder.
+- Panel detay sözleşmesi: `AdminPanel/KEY_SYSTEM_SPEC.md`
 
 ## Android Studio (Native) proje
 Eğer hedefin doğrudan Android Studio ile hatasız açıp APK almaksa `UAssetAPP.AndroidStudio/` klasörünü kullan.
