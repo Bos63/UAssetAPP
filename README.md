@@ -73,3 +73,26 @@ Bu proje:
 - Min SDK: 21 (Android 5)
 - Target SDK: 35 (Android 15)
 - Giriş + `.uasset` / `.uexp` çift kontrolü + temel HEX/SHA analiz içerir.
+
+
+## Özel API (UAssetAPP.ControlAPI)
+Bu repoya özel bir backend API eklendi: `UAssetAPP.ControlAPI/`.
+
+### Amaç
+- Admin panel üzerinden süreli key üretmek
+- Mobilde key tüketimi/doğrulaması yapmak
+- `.uasset` + `.uexp` çiftini server tarafında analiz etmek
+- Uygulama akışını merkezi API ile yönetmek
+
+### Endpointler
+- `POST /api/admin/keys/create` → key üretir (`1h`, `5h`, `1d`, `1w`, `1m`, `1season`)
+- `POST /api/mobile/keys/consume` → key doğrular ve tüketir (süresi dolmuş/önceden kullanılmış key reddedilir)
+- `POST /api/mobile/sessions/open` → mobil session token üretir
+- `POST /api/mobile/uasset/analyze` → `uasset` + `uexp` dosyalarını alır, uzantı/isim kontrolü yapar, SHA/HEX analiz döner
+
+### Çalıştırma
+```bash
+dotnet run --project UAssetAPP.ControlAPI/UAssetAPP.ControlAPI.csproj
+```
+
+> Not: `AdminSecret` için örnek sabit değer kodda `CHANGE_ME_ADMIN_SECRET` olarak geçiyor; canlı ortamda mutlaka değiştirin.
