@@ -57,3 +57,19 @@ Varsayılan demo bilgileri:
 - Beklenen JSON istek alanları: `userName`, `password`, `panelKey`, `client`
 - Beklenen JSON cevap alanları: `success`, `message`, `userName`
 - "Panelden Şifre/Key Oluştur" butonu panel linkinin `/register` sayfasını açar.
+
+
+## Android Studio (Native) proje
+Eğer hedefin doğrudan Android Studio ile hatasız açıp APK almaksa `UAssetAPP.AndroidStudio/` klasörünü kullan.
+
+### Android Studio ile açma
+1. Android Studio > **Open** > `UAssetAPP.AndroidStudio`
+2. Gradle senkronizasyonunu bekle
+3. **Build > Build APK(s)**
+
+Bu proje:
+- Paket adı: `com.urzuasset.pbg`
+- Uygulama adı: `UAssetGUİ`
+- Min SDK: 21 (Android 5)
+- Target SDK: 35 (Android 15)
+- Giriş + `.uasset` / `.uexp` çift kontrolü + temel HEX/SHA analiz içerir.
