@@ -46,7 +46,14 @@ Localde `dotnet` yoksa GitHub Actions ile APK üretebilirsin:
 ### Özel panel giriş
 Varsayılan demo bilgileri:
 - Kullanıcı: `paneladmin`
-- Şifre: `UAssetAdmin!2026`
-- Panel Key: `PbgPanel#Key-2026`
+- Şifre ve panel key: panel üzerinden oluşturulmalı.
 
 > Not: Bunlar geçici demo değerlerdir. Vereceğiniz özel link/API geldiğinde uzak doğrulama ile değiştirilebilir.
+
+
+### Panel link ile doğrulama
+- Login ekranına panel linkini gir (`https://...`).
+- Uygulama girişte şu endpoint'e POST atar: `/api/mobile/auth/validate`
+- Beklenen JSON istek alanları: `userName`, `password`, `panelKey`, `client`
+- Beklenen JSON cevap alanları: `success`, `message`, `userName`
+- "Panelden Şifre/Key Oluştur" butonu panel linkinin `/register` sayfasını açar.
