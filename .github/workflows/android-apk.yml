@@ -1,0 +1,43 @@
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'UAssetAPP.Mobile/**'
+      - '.github/workflows/android-apk.yml'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Restore
+        run: dotnet restore UAssetAPP.Mobile/UAssetAPP.Mobile.csproj
+
+      - name: Publish APK (Release)
+        run: dotnet publish UAssetAPP.Mobile/UAssetAPP.Mobile.csproj -c Release -f net8.0-android -p:AndroidPackageFormat=apk
+
+      - name: Collect APK artifact
+        run: |
+          mkdir -p artifacts
+          find UAssetAPP.Mobile/bin/Release/net8.0-android -type f -name "*.apk" -exec cp {} artifacts/ \;
+          ls -lah artifacts
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: UAssetAPP-android-apk
+          path: artifacts/*.apk
+          if-no-files-found: error
